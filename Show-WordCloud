@@ -1,0 +1,121 @@
+Function Show-WordCloud($str)
+{
+
+        #Calling the Assemblies
+        [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+        [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing.graphics")
+        
+        #Create the Conatainer Form  to place the Labels and Textboxes
+        $Form = New-Object “System.Windows.Forms.Form”;
+        $Form.Width = 400;
+        $Form.Height = 400;
+        $Form.Text = 'Word Cloud'
+        $Form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen;
+		$Font = New-Object System.Drawing.Font("lucida sans",12,[System.Drawing.FontStyle]::Regular) 
+		$Image = [System.Drawing.Bitmap]::new(300,400)
+		$Graphics = [System.Drawing.Graphics]::FromImage($Image)
+		$PictureBox = New-Object System.Windows.Forms.PictureBox
+		$PictureBox.Image = $Image
+		$PictureBox.Height =  700
+		$PictureBox.Width = 600
+		$PictureBox.Sizemode = 'autosize'
+		$PictureBox.BackgroundImageLayout = 'stretch'
+
+			$Left=100
+			$Top=100
+
+		$Bounds = @()
+		$i=0
+		$Coordinates = Get-SpiralCoordinates 10 10 1000 1000
+		Foreach($s in $str)
+		{
+			$Width = $Graphics.measurestring($S, $Font).width
+			$Height = $Graphics.measurestring($S, $Font).Height
+
+			
+			
+			if($i -eq 0)
+			{
+				$Graphics.DrawString($S,$Font,[System.Drawing.Brushes]::$(Get-Random -InputObject "red", "Green", "blue"),$x+$Left,$y+$Top)        
+				"one"
+			}
+			else
+			{
+						Foreach($c in $Coordinates)
+						{
+							[int]$x, [int]$y = $c.split(",")
+							$CurrentBounds =''| select @{n='String';exp={$s}},@{n='X1';exp={$x+$Left}},@{n='Y1';exp={$y+$Top}},@{n='X2';exp={[math]::Ceiling($x1+$width)}},@{n='Y2';exp={[math]::Ceiling($Y1+$Height)}}
+							$currentbounds
+							Foreach($b in $Bounds) 
+							{
+								if(-not (Test-RectangleOverlap $CurrentBounds $b))
+								{
+									$Graphics.DrawString($S,$Font,[System.Drawing.Brushes]::$(Get-Random -InputObject "red", "Green", "blue"),$x+$Left,$y+$Top)        
+								}
+							}
+						}
+			}
+		
+			$Bounds = $Bounds+$CurrentBounds
+
+			$i=$i+1 #increment $i
+		}
+		#$Bounds
+		#Test-RectangleOverlap $Bounds[0] $Bounds[1]
+
+
+		$Form.Controls.Add($PictureBox)
+        $Form.ShowDialog()|Out-Null
+}
+
+
+Function Test-RectangleOverlap($b1, $b2)
+{
+	# Return True when rectangle overlaps
+	#while(-not (($b1.x1 -le $b2.x2) -and ($b1.y1 -le $b2.y2) -and ($b1.x2 -ge $b2.x1) -and ($b1.y2 -ge $b2.y1)))
+	#{
+	#	$b1.x1+$b1+1
+	#	$b1
+	#}
+	 return  -not (($b1.x1 -le $b2.x2) -and ($b1.y1 -le $b2.y2) -and ($b1.x2 -ge $b2.x1) -and ($b1.y2 -ge $b2.y1))
+	#($b1.x1 -lt $b2.x2) 
+	#($b1.y1 -lt $b2.y2)
+	#($b1.x2 -gt $b2.x1)
+	#($b1.y2 -gt $b2.y1)
+}
+
+Function Get-SpiralCoordinates($Left, $Top, $Width, $Height)
+{
+    $x = $y = 0
+    
+    $Delta = 0, -1
+
+	$Coordinates = @()
+
+    For($i = $width*$height; $i -gt 0; $i=$i-1) 
+    {
+        if( (-($width/2) -lt $x -and $x -le ($width/2)) -and (-($height/2) -lt $y -and $y -le ($height/2))) 
+        {
+            #$Graphics.DrawString("*",$Font,[System.Drawing.Brushes]::$(Get-Random -InputObject "red", "Green", "blue"),$x+$Left,$y+$Top)
+			$Coordinates = $Coordinates + "$x,$y"
+        }
+    
+        if($x -eq $y -or ($x -lt 0-and $x -eq (-$y)) -or ($x -gt 0 -and $x -eq (1-$y))){
+            #change direction
+            $delta = -$delta[1], $delta[0]           
+        }
+    
+            #$delta = -$delta[1], $delta[0]
+			$x =$x+ $delta[0];
+			$y =$y+ $delta[1];
+            #$Graphics.DrawString("*",$Font,[System.Drawing.Brushes]::$(Get-Random -InputObject "red", "Green", "blue"),$x+$Left,$y+$Top)        
+
+			$Coordinates = $Coordinates + "$x,$y"
+    }
+
+	Return $Coordinates
+    }
+
+Show-WordCloud "powershell", "hello" ,"Word", "cloud","Greedy","powershell", "hello" ,"Word", "cloud","Greedy","powershell", "hello" ,"Word", "cloud","Greedy"
+
+
